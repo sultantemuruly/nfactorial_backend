@@ -1,10 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from auth import auth, models
+from auth import auth
 from db.models import Users
 from db.dependencies import get_db
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
+from schemas.user_schemas import UserCreate, User, Token
+
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
@@ -24,7 +26,7 @@ def authenticate_user(db: Session, username: str, password: str):
     return user
 
 
-@router.post("/token", response_model=models.Token)
+@router.post("/token", response_model=Token)
 def login(
     form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)
 ):
@@ -54,12 +56,12 @@ async def get_current_user(
 
 
 @router.get("/me")
-def read_users_me(current_user: models.User = Depends(get_current_user)):
+def read_users_me(current_user: User = Depends(get_current_user)):
     return current_user
 
 
-@router.post("/register", response_model=models.User)
-def register_user(user_data: models.UserCreate, db: Session = Depends(get_db)):
+@router.post("/register", response_model=User)
+def register_user(user_data: UserCreate, db: Session = Depends(get_db)):
     existing_user = db.query(Users).filter(Users.username == user_data.username).first()
 
     if existing_user:

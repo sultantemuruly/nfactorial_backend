@@ -1,20 +1,20 @@
 from pydantic import BaseModel
 
 
-class BookBase(BaseModel):
+class TaskBase(BaseModel):
     title: str
     description: str
 
 
-class BookCreate(BookBase):
+class TaskCreate(TaskBase):
     pass
 
 
-class BookUpdate(BookBase):
+class TaskUpdate(TaskBase):
     pass
 
 
-class BookOut(BookBase):
+class TaskOut(TaskBase):
     id: int
 
     class Config:
