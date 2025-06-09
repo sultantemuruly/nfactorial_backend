@@ -9,19 +9,19 @@ jobs:
     runs-on: ubuntu-latest
 
     services:
-  postgres:
-    image: postgres:14
-    env:
-      POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
-      POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-      POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
-    ports:
-      - 5432:5432
-    options: >-
-      --health-cmd="pg_isready -U sultan"
-      --health-interval=10s
-      --health-timeout=5s
-      --health-retries=10
+      postgres:
+        image: postgres:14
+        env:
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U sultan"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
 
     env:
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -32,36 +32,36 @@ jobs:
       ALGORITHM: ${{ secrets.ALGORITHM }}
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: 3.11
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.11
 
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r app/requirements.txt
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r app/requirements.txt
 
-    - name: Wait for Postgres
-      run: |
-        for i in {1..10}; do
-          pg_isready -h localhost -U $POSTGRES_USER && break
-          echo "Waiting for Postgres..."
-          sleep 3
-        done
+      - name: Wait for Postgres
+        run: |
+          for i in {1..10}; do
+            pg_isready -h localhost -U $POSTGRES_USER && break
+            echo "Waiting for Postgres..."
+            sleep 3
+          done
 
-    - name: (Optional) Test DB connection
-      run: |
-        apt-get update && apt-get install -y postgresql-client
-        psql "$DATABASE_URL" -c '\l'
+      - name: (Optional) Test DB connection
+        run: |
+          apt-get update && apt-get install -y postgresql-client
+          psql "$DATABASE_URL" -c '\l'
 
-    - name: Run tests (optional)
-      run: |
-        echo "Tests can go here (e.g., pytest)"
-        # Example: pytest app/tests/
+      - name: Run tests (optional)
+        run: |
+          echo "Tests can go here (e.g., pytest)"
+          # pytest app/tests/
 
-    - name: Build Docker image
-      run: docker build -t fastapi-app .
+      - name: Build Docker image
+        run: docker build -t fastapi-app .
