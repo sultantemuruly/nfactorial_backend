@@ -12,8 +12,9 @@ class TokenData(BaseModel):
 
 class User(BaseModel):
     username: str
-    email: str | None = None
-    disabled: bool | None = None
+
+    class Config:
+        orm_mode = True
 
 
 class UserInDB(User):
@@ -21,5 +22,10 @@ class UserInDB(User):
 
 
 class UserLogin(BaseModel):
+    username: str
+    password: str
+
+
+class UserCreate(BaseModel):
     username: str
     password: str
