@@ -18,13 +18,18 @@ jobs:
         ports:
           - 5432:5432
         options: >-
-          --health-cmd="pg_isready"
+          --health-cmd="pg_isready -U ${{ secrets.POSTGRES_USER }}"
           --health-interval=10s
           --health-timeout=5s
-          --health-retries=5
+          --health-retries=10
 
     env:
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+      POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+      POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+      SECRET_KEY: ${{ secrets.SECRET_KEY }}
+      ALGORITHM: ${{ secrets.ALGORITHM }}
 
     steps:
     - name: Checkout code
@@ -40,11 +45,23 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r app/requirements.txt
 
+    - name: Wait for Postgres
+      run: |
+        for i in {1..10}; do
+          pg_isready -h localhost -U $POSTGRES_USER && break
+          echo "Waiting for Postgres..."
+          sleep 3
+        done
+
+    - name: (Optional) Test DB connection
+      run: |
+        apt-get update && apt-get install -y postgresql-client
+        psql "$DATABASE_URL" -c '\l'
+
     - name: Run tests (optional)
       run: |
-        echo "You can add pytest or curl test here"
+        echo "Tests can go here (e.g., pytest)"
         # Example: pytest app/tests/
-        # Or curl localhost if you're running uvicorn in background
 
     - name: Build Docker image
       run: docker build -t fastapi-app .
