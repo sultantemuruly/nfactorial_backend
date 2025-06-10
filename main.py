@@ -2,10 +2,12 @@ from fastapi import FastAPI
 from api.users import users
 from api.tasks import tasks
 from redis_cache.redis_client import redis_client
+from api.ai import ai
 
 app = FastAPI()
 app.include_router(tasks.router)
 app.include_router(users.router)
+app.include_router(ai.router)
 
 
 @app.get("/")
