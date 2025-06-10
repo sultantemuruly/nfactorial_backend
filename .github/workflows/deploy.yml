@@ -67,16 +67,20 @@ jobs:
         run: docker build -t fastapi-app .
 
       # ------------------ NEW DEPLOY STEP ------------------ #
-      - name: Deploy to DigitalOcean Droplet
+      - name: Copy project to droplet
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.DO_SSH_KEY }}" > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
-          ssh-keyscan -H ${{ secrets.DO_HOST }} >> ~/.ssh/known_hosts
+          ssh-keyscan -H "${{ secrets.DO_HOST }}" >> ~/.ssh/known_hosts
 
+          scp -r . ${{ secrets.DO_USER }}@${{ secrets.DO_HOST }}:/root/deploy_tmp
+
+      - name: Deploy app
+        run: |
           ssh ${{ secrets.DO_USER }}@${{ secrets.DO_HOST }} << 'EOF'
-            cd /root/nfactorial_backend
-            git pull origin main
-            docker-compose down
-            docker-compose up -d --build
+            cd /root/deploy_tmp
+            docker build -t fastapi-app .
+            docker stop fastapi-app || true && docker rm fastapi-app || true
+            docker run -d --name fastapi-app -p 80:80 fastapi-app
           EOF
