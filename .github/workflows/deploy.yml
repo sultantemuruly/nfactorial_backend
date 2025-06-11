@@ -78,9 +78,23 @@ jobs:
 
       - name: Deploy app
         run: |
-          ssh ${{ secrets.DO_USER }}@${{ secrets.DO_HOST }} << 'EOF'
+          ssh ${{ secrets.DO_USER }}@${{ secrets.DO_HOST }} << EOF
+            set -e
+
+            # Check if Docker is installed, and install it if not
+            if ! command -v docker &> /dev/null; then
+              echo "Docker not found. Installing Docker..."
+              sudo apt-get update
+              sudo apt-get install -y docker.io
+              sudo systemctl start docker
+              sudo systemctl enable docker
+            fi
+
             cd /root/deploy_tmp
-            docker build -t fastapi-app .
-            docker stop fastapi-app || true && docker rm fastapi-app || true
-            docker run -d --name fastapi-app -p 80:80 fastapi-app
+
+            # Build and run the Docker container
+            sudo docker build -t fastapi-app .
+            sudo docker stop fastapi-app || true
+            sudo docker rm fastapi-app || true
+            sudo docker run -d --name fastapi-app -p 80:80 fastapi-app
           EOF

@@ -13,7 +13,7 @@ load_dotenv()
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
-router = APIRouter()
+router = APIRouter(prefix="/ai", tags=["AI"])
 vector_store = None
 
 
