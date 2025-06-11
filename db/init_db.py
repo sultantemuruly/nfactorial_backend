@@ -1,4 +1,5 @@
 from db.database import Base, engine
 from db.models import Users, Tasks
 
-Base.metadata.create_all(bind=engine)
+if __name__ == "__main__":
+    Base.metadata.create_all(bind=engine)
