@@ -81,9 +81,7 @@ jobs:
           ssh ${{ secrets.DO_USER }}@${{ secrets.DO_HOST }} << EOF
             set -e
 
-            # Check if Docker is installed, and install it if not
             if ! command -v docker &> /dev/null; then
-              echo "Docker not found. Installing Docker..."
               sudo apt-get update
               sudo apt-get install -y docker.io
               sudo systemctl start docker
@@ -92,9 +90,11 @@ jobs:
 
             cd /root/deploy_tmp
 
-            # Build and run the Docker container
-            sudo docker build -t fastapi-app .
+            # Fix here: free up port 80
             sudo docker stop fastapi-app || true
             sudo docker rm fastapi-app || true
+            sudo fuser -k 80/tcp || true    # <-- Kill any process using port 80
+
+            sudo docker build -t fastapi-app .
             sudo docker run -d --name fastapi-app -p 80:80 fastapi-app
           EOF
